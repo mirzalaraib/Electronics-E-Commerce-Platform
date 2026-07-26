@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { Package, FolderOpen, ListOrdered, Plus, Edit2, Trash2, Check, X, FileImage, Sparkles } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -38,9 +38,9 @@ export const AdminDashboard = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const prodList = await appwriteService.products.list();
-      const catList = await appwriteService.categories.list();
-      const ordList = await appwriteService.orders.listAll();
+      const prodList = await firebaseService.products.list();
+      const catList = await firebaseService.categories.list();
+      const ordList = await firebaseService.orders.listAll();
       
       setProducts(prodList);
       setCategories(catList);
@@ -82,7 +82,7 @@ export const AdminDashboard = () => {
     try {
       let finalImgId = productImageId;
       if (productImageFile) {
-        const uploadRes = await appwriteService.storage.uploadFile(productImageFile);
+        const uploadRes = await firebaseService.storage.uploadFile(productImageFile);
         finalImgId = uploadRes.mockUrl || uploadRes.$id;
       }
 
@@ -101,9 +101,9 @@ export const AdminDashboard = () => {
       };
 
       if (currentProduct) {
-        await appwriteService.products.update(currentProduct.$id, productPayload);
+        await firebaseService.products.update(currentProduct.$id, productPayload);
       } else {
-        await appwriteService.products.create(productPayload);
+        await firebaseService.products.create(productPayload);
       }
       
       setShowProductModal(false);
@@ -117,7 +117,7 @@ export const AdminDashboard = () => {
   const handleProductDelete = async (id) => {
     if (!window.confirm('Delete this product?')) return;
     try {
-      await appwriteService.products.delete(id);
+        await firebaseService.products.delete(id);
       loadAllData();
     } catch (err) {
       alert('Delete failed: ' + err.message);
@@ -146,7 +146,7 @@ export const AdminDashboard = () => {
     try {
       let finalImgId = categoryImageId;
       if (categoryImageFile) {
-        const uploadRes = await appwriteService.storage.uploadFile(categoryImageFile);
+        const uploadRes = await firebaseService.storage.uploadFile(categoryImageFile);
         finalImgId = uploadRes.mockUrl || uploadRes.$id;
       }
 
@@ -156,9 +156,9 @@ export const AdminDashboard = () => {
       }
 
       if (currentCategory) {
-        await appwriteService.categories.update(currentCategory.$id, { title: categoryTitle, imageID: finalImgId });
+        await firebaseService.categories.update(currentCategory.$id, { title: categoryTitle, imageID: finalImgId });
       } else {
-        await appwriteService.categories.create(categoryTitle, finalImgId);
+        await firebaseService.categories.create(categoryTitle, finalImgId);
       }
 
       setShowCategoryModal(false);
@@ -172,7 +172,7 @@ export const AdminDashboard = () => {
   const handleCategoryDelete = async (id) => {
     if (!window.confirm('Delete this category?')) return;
     try {
-      await appwriteService.categories.delete(id);
+        await firebaseService.categories.delete(id);
       loadAllData();
     } catch (err) {
       alert('Delete failed: ' + err.message);
@@ -187,7 +187,7 @@ export const AdminDashboard = () => {
 
   const saveOrderStatus = async (orderId) => {
     try {
-      await appwriteService.orders.updateStatus(orderId, newOrderStatus);
+      await firebaseService.orders.updateStatus(orderId, newOrderStatus);
       setOrderUpdatingId(null);
       loadAllData();
     } catch (err) {
@@ -286,7 +286,7 @@ export const AdminDashboard = () => {
                       <tr key={prod.$id}>
                         <td>
                           <img 
-                            src={appwriteService.storage.getFilePreview(prod.imageID)} 
+                            src={firebaseService.storage.getFilePreview(prod.imageID)} 
                             alt={prod.name} 
                             className="admin-product-thumb" 
                           />
@@ -337,7 +337,7 @@ export const AdminDashboard = () => {
                       <tr key={cat.$id}>
                         <td>
                           <img 
-                            src={appwriteService.storage.getFilePreview(cat.imageID)} 
+                            src={firebaseService.storage.getFilePreview(cat.imageID)} 
                             alt={cat.title} 
                             className="admin-product-thumb" 
                           />

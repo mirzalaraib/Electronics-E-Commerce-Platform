@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { CreditCard, Truck, CheckCircle } from 'lucide-react';
 
 export const Checkout = () => {
@@ -65,7 +65,7 @@ export const Checkout = () => {
         paymentMethod,
       };
 
-      const result = await appwriteService.orders.create(orderDetails, items);
+      const result = await firebaseService.orders.create(orderDetails, items);
       setPlacedOrderId(result.$id);
       setOrderSuccess(true);
       clearCart();
@@ -188,7 +188,7 @@ export const Checkout = () => {
             {cartItems.map((item) => (
               <div key={item.$id} style={{ display: 'flex', justifyItems: 'space-between', gap: '1rem', fontSize: '0.9rem' }}>
                 <img 
-                  src={appwriteService.storage.getFilePreview(item.imageID)} 
+                  src={firebaseService.storage.getFilePreview(item.imageID)} 
                   alt={item.name} 
                   style={{ width: '40px', height: '40px', objectFit: 'contain', background: 'rgba(255,255,255,0.02)', borderRadius: '4px' }} 
                 />

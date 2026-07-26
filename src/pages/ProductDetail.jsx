@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { useCart } from '../context/CartContext';
 import { Plus, Minus, ShoppingCart, ChevronLeft } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const prod = await appwriteService.products.get(id);
+        const prod = await firebaseService.products.get(id);
         setProduct(prod);
       } catch (err) {
         console.error('Error fetching product details:', err);
@@ -62,7 +62,7 @@ export const ProductDetail = () => {
     }
   }
 
-  const imageUrl = appwriteService.storage.getFilePreview(product.imageID);
+  const imageUrl = firebaseService.storage.getFilePreview(product.imageID);
 
   return (
     <div className="product-detail-container">

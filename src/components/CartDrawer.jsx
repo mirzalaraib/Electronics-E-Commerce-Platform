@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { X, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
 
 export const CartDrawer = ({ isOpen, onClose }) => {
@@ -50,7 +50,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
           <>
             <div className="cart-items-list">
               {cartItems.map((item) => {
-                const imgUrl = appwriteService.storage.getFilePreview(item.imageID);
+                const imgUrl = firebaseService.storage.getFilePreview(item.imageID);
                 return (
                   <div key={item.$id} className="cart-item">
                     <img src={imgUrl} alt={item.name} className="cart-item-img" />

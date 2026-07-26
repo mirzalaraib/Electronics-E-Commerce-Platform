@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { User, Phone, MapPin, CheckCircle, Package, Clock, ShieldAlert } from 'lucide-react';
 
 export const Dashboard = () => {
@@ -17,7 +17,7 @@ export const Dashboard = () => {
     const fetchOrders = async () => {
       if (!user) return;
       try {
-        const orderHistory = await appwriteService.orders.listUserOrders(user.$id);
+        const orderHistory = await firebaseService.orders.listUserOrders(user.$id);
         setOrders(orderHistory);
       } catch (err) {
         console.error('Error fetching user orders:', err);
