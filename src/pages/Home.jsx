@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { ProductCard } from '../components/ProductCard';
 import { Filter, SlidersHorizontal } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export const Home = ({ searchFilter = '' }) => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const catList = await appwriteService.categories.list();
+        const catList = await firebaseService.categories.list();
         setCategories(catList);
       } catch (err) {
         console.error('Error loading categories:', err);
@@ -31,7 +31,7 @@ export const Home = ({ searchFilter = '' }) => {
       setLoading(true);
       try {
         const searchVal = searchFilter || searchParams.get('search') || '';
-        const prodList = await appwriteService.products.list(searchVal, selectedCategory);
+        const prodList = await firebaseService.products.list(searchVal, selectedCategory);
         
         // Handle sorting in client side for simplicity and reliability
         let sorted = [...prodList];
@@ -74,7 +74,7 @@ export const Home = ({ searchFilter = '' }) => {
           </div>
           <div className="hero-image-container">
             <img 
-              src={appwriteService.storage.getFilePreview(featuredProduct.imageID)} 
+              src={firebaseService.storage.getFilePreview(featuredProduct.imageID)} 
               alt={featuredProduct.name} 
               className="hero-image" 
             />
@@ -95,7 +95,7 @@ export const Home = ({ searchFilter = '' }) => {
           <span className="category-circle-title" style={{ color: selectedCategory === '' ? 'var(--primary)' : '' }}>All Products</span>
         </div>
         {categories.map((cat) => {
-          const imgUrl = appwriteService.storage.getFilePreview(cat.imageID);
+          const imgUrl = firebaseService.storage.getFilePreview(cat.imageID);
           const isSelected = selectedCategory === cat.$id;
           return (
             <div key={cat.$id} className="category-circle-card" onClick={() => setSelectedCategory(cat.$id)}>

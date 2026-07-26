@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 import { ShoppingCart } from 'lucide-react';
 
 export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const imageUrl = appwriteService.storage.getFilePreview(product.imageID);
+  const imageUrl = firebaseService.storage.getFilePreview(product.imageID);
 
   return (
     <div className="product-card">

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { appwriteService } from '../services/appwrite';
+import { firebaseService } from '../services/firebase';
 
 const AuthContext = createContext();
 
@@ -15,11 +15,11 @@ export const AuthProvider = ({ children }) => {
 
   const checkUserSession = async () => {
     try {
-      const currentUser = await appwriteService.auth.getCurrentUser();
+      const currentUser = await firebaseService.auth.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
         // Fetch user profile doc
-        const userProfile = await appwriteService.profile.get(currentUser.$id);
+        const userProfile = await firebaseService.profile.get(currentUser.$id);
         setProfile(userProfile);
       }
     } catch (err) {
@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const loggedUser = await appwriteService.auth.login(email, password);
+      const loggedUser = await firebaseService.auth.login(email, password);
       setUser(loggedUser);
-      const userProfile = await appwriteService.profile.get(loggedUser.$id);
+      const userProfile = await firebaseService.profile.get(loggedUser.$id);
       setProfile(userProfile);
       return loggedUser;
     } catch (err) {
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const createdUser = await appwriteService.auth.signup(email, password, name);
+      const createdUser = await firebaseService.auth.signup(email, password, name);
       setUser(createdUser);
       setProfile({ phone: '', address: '', fullName: name });
       return createdUser;
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
-      await appwriteService.auth.logout();
+      await firebaseService.auth.logout();
       setUser(null);
       setProfile({ phone: '', address: '', fullName: '' });
     } catch (err) {
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     if (!user) return;
     try {
-      const updated = await appwriteService.profile.update(user.$id, profileData);
+      const updated = await firebaseService.profile.update(user.$id, profileData);
       setProfile(prev => ({ ...prev, ...updated }));
       return updated;
     } catch (err) {
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         updateProfile,
-        isMock: appwriteService.isMock
+        isMock: firebaseService.isMock
       }}
     >
       {children}
