@@ -30,10 +30,10 @@ And admins can:
 - **Lucide React** - Icons (shopping cart, search, etc.)
 
 ### Backend (Where data is stored)
-- **Appwrite** - Backend service (like Firebase)
-  - Handles user authentication
-  - Stores products, orders, categories
-  - Manages file uploads (images)
+- **Firebase** - Backend service by Google
+  - Handles user authentication (Email/Password)
+  - Stores products, orders, categories in Firestore
+  - Manages file uploads in Firebase Storage
 
 ---
 
@@ -45,6 +45,7 @@ d:/heyyy/
 ├── package.json                  # List of tools/libraries used
 ├── index.html                    # Starting point of website
 ├── vite.config.js                # Vite configuration
+├── FIREBASE_SETUP.md            # Firebase setup guide
 ├── public/                       # Static files (favicon, icons)
 │
 ├── src/                          # All source code
@@ -72,7 +73,7 @@ d:/heyyy/
 │   │   └── CartContext.jsx       # Shopping cart state
 │   │
 │   ├── services/                 # Backend connection
-│   │   └── appwrite.js           # ALL Appwrite API calls
+│   │   └── firebase.js           # ALL Firebase API calls
 │   │
 │   └── assets/                   # Images, fonts
 ```
@@ -108,8 +109,8 @@ main.jsx → App.jsx → Wraps everything in Providers
 #### A. Browsing Products (Home Page)
 ```
 Home.jsx loads
-├─→ Calls appwriteService.categories.list()
-├─→ Calls appwriteService.products.list()
+├─→ Calls firebaseService.categories.list()
+├─→ Calls firebaseService.products.list()
 ├─→ Shows hero banner with featured product
 ├─→ Shows category circles (Headphones, Watches, etc.)
 └─→ Shows product grid with search/filter
@@ -120,7 +121,7 @@ Home.jsx loads
 Click product card
 → Goes to /product/:id
 → ProductDetail.jsx loads
-→ Calls appwriteService.products.get(id)
+→ Calls firebaseService.products.get(id)
 → Shows image, price, description, specs
 → User can select quantity and add to cart
 ```
@@ -154,8 +155,8 @@ Checkout form:
 ├─→ Collects: Name, Phone, Address
 ├─→ Payment method: COD (Cash on Delivery)
 └─→ On submit:
-    ├─→ Saves profile to Appwrite
-    ├─→ Creates order in Appwrite
+    ├─→ Saves profile to Firebase
+    ├─→ Creates order in Firestore
     ├─→ Creates order items
     └─→ Clears cart, shows success
 ```
@@ -208,7 +209,7 @@ Checkout form:
 ```
 1. User enters email/password
 2. AuthContext.login() called
-3. Calls appwriteService.auth.login()
+3. Calls firebaseService.auth.login()
 4. On success:
    ├─→ Saves user to React state
    ├─→ Fetches user profile
@@ -233,9 +234,9 @@ IF user is valid:
 
 ---
 
-## 🗄️ Database Structure (Appwrite Collections)
+## 🗄️ Database Structure (Firestore Collections)
 
-### UsersProfile
+### user_profiles
 ```
 - $id: User ID (same as auth user ID)
 - phone: Phone number
@@ -243,14 +244,14 @@ IF user is valid:
 - fullName: User's full name
 ```
 
-### Categories
+### categories
 ```
 - $id: Unique ID (cat_xxx)
 - title: Category name (e.g., "Headphones")
 - imageID: Image file ID or URL
 ```
 
-### Products
+### products
 ```
 - $id: Unique ID (prod_xxx)
 - name: Product name
@@ -261,7 +262,7 @@ IF user is valid:
 - specifications: JSON string (e.g., {"Battery": "8 Hours"})
 ```
 
-### Orders
+### orders
 ```
 - $id: Unique ID
 - userID: Who placed order
@@ -272,10 +273,10 @@ IF user is valid:
 - quantity: Total items
 - status: Pending/Processing/Shipped/Delivered
 - paymentMethod: COD or ONLINE
-- $createdAt: Order date
+- createdAt: Order date
 ```
 
-### OrderItems
+### order_items
 ```
 - $id: Unique ID
 - orderID: Link to order
@@ -286,9 +287,9 @@ IF user is valid:
 - imageID: Product image
 ```
 
-### Storage Buckets
+### Storage
 ```
-- images/ (bucket)
+- images/ (bucket in Firebase Storage)
   - Product images
   - Category images
 ```
@@ -314,13 +315,13 @@ IF user is valid:
 
 ---
 
-## 🔧 Backend Service (appwrite.js)
+## 🔧 Backend Service (firebase.js)
 
-This file is the **bridge between frontend and Appwrite**.
+This file is the **bridge between frontend and Firebase**.
 
 ### Structure:
 ```
-appwriteService = {
+firebaseService = {
   auth: { login, signup, logout, getCurrentUser },
   profile: { get, update },
   categories: { list, create, update, delete },
@@ -331,7 +332,7 @@ appwriteService = {
 ```
 
 ### Mock Data (Local Fallback)
-If Appwrite is not configured:
+If Firebase is not configured:
 - Uses localStorage for data
 - Pre-seeded with sample products
 - Works offline for development
@@ -412,9 +413,9 @@ Quantity Update:
 ```
 1. Validates form (name, phone, address required)
 2. Updates user profile if changed
-3. Creates order in Appwrite:
-   ├─→ Master order document (Orders collection)
-   └─→ Order items (OrderItems collection)
+3. Creates order in Firestore:
+   ├─→ Master order document (orders collection)
+   └─→ Order items (order_items collection)
 4. Clears cart
 5. Shows success with Order ID
 ```
@@ -422,8 +423,8 @@ Quantity Update:
 ### 4. Admin Status Updates
 ```
 Admin selects new status
-→ Calls appwriteService.orders.updateStatus()
-→ Updates in Appwrite
+→ Calls firebaseService.orders.updateStatus()
+→ Updates in Firestore
 → User sees updated status in dashboard
 ```
 
@@ -433,7 +434,7 @@ Admin selects new status
 
 ### Prerequisites
 1. Node.js installed
-2. Appwrite account (https://cloud.appwrite.io)
+2. Firebase account (https://console.firebase.google.com)
 
 ### Setup Steps
 
@@ -442,88 +443,29 @@ Admin selects new status
 npm install
 ```
 
-#### 2. Create Appwrite Project
-1. Go to https://cloud.appwrite.io
-2. Create new project
-3. Note down:
-   - Project ID
-   - Endpoint (usually https://cloud.appwrite.io/v1)
+#### 2. Set Up Firebase
+Follow the complete guide in **FIREBASE_SETUP.md** to:
+1. Create Firebase project
+2. Enable Authentication
+3. Create Firestore database
+4. Set up Storage
+5. Configure security rules
+6. Get Firebase credentials
 
-#### 3. Create Database & Collections
-Create these collections in Appwrite:
-
-**UsersProfile** (Collection ID: `user_profiles`)
-- phone (string)
-- address (string)
-- fullName (string)
-
-**Categories** (Collection ID: `categories`)
-- title (string)
-- imageID (string)
-
-**Products** (Collection ID: `products`)
-- name (string)
-- price (integer)
-- description (string)
-- categoryID (string)
-- imageID (string)
-- specifications (string)
-
-**Orders** (Collection ID: `orders`)
-- userID (string)
-- customerName (string)
-- phone (string)
-- address (string)
-- totalPrice (integer)
-- quantity (integer)
-- status (string)
-- paymentMethod (string)
-
-**OrderItems** (Collection ID: `order_items`)
-- orderID (string)
-- productID (string)
-- productName (string)
-- price (integer)
-- quantity (integer)
-- imageID (string)
-
-**Create Storage Bucket:**
-- Name: `images` (Bucket ID: `images`)
-- Permissions: Read/Write for all
-
-#### 4. Configure Environment Variables
-Create `.env` file in root:
+#### 3. Configure Environment Variables
+Create `.env` file in root with your Firebase config:
 
 ```env
-VITE_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
-VITE_APPWRITE_PROJECT_ID=your_project_id
-VITE_APPWRITE_DATABASE_ID=electronics_store
-VITE_APPWRITE_PRODUCTS_COLLECTION_ID=products
-VITE_APPWRITE_CATEGORIES_COLLECTION_ID=categories
-VITE_APPWRITE_ORDERS_COLLECTION_ID=orders
-VITE_APPWRITE_ORDER_ITEMS_COLLECTION_ID=order_items
-VITE_APPWRITE_PROFILES_COLLECTION_ID=user_profiles
-VITE_APPWRITE_IMAGES_BUCKET_ID=images
+VITE_FIREBASE_API_KEY=your_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-#### 5. Add Indexes in Appwrite
-For performance, add these indexes:
-
-**Products Collection:**
-- Index on `categoryID` (equality)
-- Index on `name` (search)
-- Index on `$createdAt` (descending)
-
-**Orders Collection:**
-- Index on `userID` (equality)
-- Index on `$createdAt` (descending)
-- Index on `status` (equality)
-
-**OrderItems Collection:**
-- Index on `orderID` (equality)
-
-#### 6. Create Admin User
-1. Sign up normally with email: `admin@boat.com`
+#### 4. Create Admin User
+1. After setting up Firebase, create a user with email: `admin@boat.com`
 2. Use this email to log in and access `/admin`
 
 ### Run Development Server
@@ -609,8 +551,8 @@ Output will be in `dist/` folder
 
 **Data Flow:**
 ```
-useEffect → appwriteService.categories.list()
-useEffect → appwriteService.products.list(search, category)
+useEffect → firebaseService.categories.list()
+useEffect → firebaseService.products.list(search, category)
 State: products, categories, selectedCategory, sortBy, loading
 ```
 
@@ -630,7 +572,7 @@ State: products, categories, selectedCategory, sortBy, loading
 
 **Data Flow:**
 ```
-useEffect → appwriteService.products.get(id)
+useEffect → firebaseService.products.get(id)
 State: product, loading, quantity, addedMessage
 ```
 
@@ -672,7 +614,7 @@ State: product, loading, quantity, addedMessage
 
 **Data Flow:**
 ```
-useEffect → appwriteService.orders.listUserOrders(user.$id)
+useEffect → firebaseService.orders.listUserOrders(user.$id)
 ```
 
 ---
@@ -829,7 +771,7 @@ useEffect → appwriteService.orders.listUserOrders(user.$id)
 
 ### Service File
 
-#### `src/services/appwrite.js` (528 lines)
+#### `src/services/firebase.js` (~700 lines)
 **Purpose:** All backend API calls
 
 **This is the MOST IMPORTANT file for backend integration.**
@@ -837,14 +779,14 @@ useEffect → appwriteService.orders.listUserOrders(user.$id)
 **Initialization:**
 ```
 Reads environment variables
-Creates Appwrite Client if configured
+Creates Firebase Client if configured
 Initializes mock data if not configured
 ```
 
 **Sections:**
 
 1. **Initialization & Mock Data**
-   - Sets up Appwrite client
+   - Sets up Firebase client (Auth, Firestore, Storage)
    - Creates sample products/categories/orders if none exist
    - localStorage fallback for offline mode
 
@@ -882,7 +824,7 @@ Initializes mock data if not configured
    - `getFilePreview(fileId)` - Get image URL
 
 **Mock Mode:**
-If `project_placeholder` is set, uses localStorage instead of Appwrite.
+If Firebase is not configured, uses localStorage instead of Firebase.
 
 ---
 
@@ -914,9 +856,9 @@ If `project_placeholder` is set, uses localStorage instead of Appwrite.
    b. Calls updateProfile() if data changed
    c. Prepares orderDetails object
    d. Prepares items array from cart
-   e. Calls appwriteService.orders.create(orderDetails, items)
-   f. Appwrite creates:
-      - Order document in Orders collection
+   e. Calls firebaseService.orders.create(orderDetails, items)
+   f. Firebase creates:
+      - Order document in orders collection
       - OrderItem documents for each item
    g. clearCart() called
    h. setOrderSuccess(true)
@@ -937,8 +879,8 @@ If `project_placeholder` is set, uses localStorage instead of Appwrite.
    - Delivered
 6. Admin selects new status & clicks save
 7. saveOrderStatus() calls:
-   appwriteService.orders.updateStatus(orderId, status)
-8. Appwrite updates order document
+   firebaseService.orders.updateStatus(orderId, status)
+8. Firestore updates order document
 9. Table refreshes with new status
 10. Next time user checks dashboard, sees updated status
 ```
@@ -953,8 +895,8 @@ React is like building with LEGO. You make small pieces (components) and snap th
 ### What is Context API?
 Think of it like a school PA system. Any teacher (component) can make an announcement (update state), and all classrooms (other components) can hear it.
 
-### What is Appwrite?
-Appwrite is like a digital filing cabinet. It stores:
+### What is Firebase?
+Firebase is like a digital filing cabinet from Google. It stores:
 - User accounts (login info)
 - Products (electronics info)
 - Orders (what people bought)
@@ -966,7 +908,7 @@ Like a notebook where the website remembers things even after you close the brow
 Like doors in a house. Each door (URL) leads to a different room (page).
 
 ### What is a Service?
-A service is like a receptionist. You ask it to do something (fetch products), and it talks to the backend (Appwrite) for you.
+A service is like a receptionist. You ask it to do something (fetch products), and it talks to the backend (Firebase) for you.
 
 ### What are Props?
 Props are like passing notes in class. Parent components pass information to child components.
@@ -1021,7 +963,7 @@ Props are like passing notes in class. Parent components pass information to chi
 - [x] React + Vite setup
 - [x] React Router (6 routes)
 - [x] Context API (2 contexts)
-- [x] Appwrite integration (7 services)
+- [x] Firebase integration (7 services)
 - [x] Mock data fallback
 - [x] Environment variables
 - [x] Form validation
@@ -1063,7 +1005,7 @@ Props are like passing notes in class. Parent components pass information to chi
 ✅ **Task Completed:** 100%
 
 All requirements from the master prompt are implemented:
-1. ✅ Complete Appwrite setup with collections & buckets
+1. ✅ Complete Firebase setup with collections & storage
 2. ✅ Database schema designed & implemented
 3. ✅ React project structure organized
 4. ✅ UI matching reference (dark theme, responsive, modern)
@@ -1079,7 +1021,7 @@ All requirements from the master prompt are implemented:
 1. **index.css** - See all the colors and styles
 2. **App.jsx** - See the map of URLs to pages
 3. **Home.jsx** - See how products load and display
-4. **appwrite.js** - See how data is fetched/saved
+4. **firebase.js** - See how data is fetched/saved
 
 ### Then Explore:
 5. **AuthContext.jsx** - Understand login flow
@@ -1095,13 +1037,13 @@ All requirements from the master prompt are implemented:
 ## 🆘 Common Issues & Solutions
 
 ### 1. Products not loading
-- Check Appwrite credentials in `.env`
-- Verify collections exist in Appwrite
+- Check Firebase credentials in `.env`
+- Verify collections exist in Firestore
 - Check browser console for errors
 
 ### 2. Images not showing
-- Store `imageID` can be URL (Unsplash) or Appwrite file ID
-- Check storage bucket permissions
+- Store `imageID` can be URL (Unsplash) or Firebase storage path
+- Check Storage permissions in Firebase Console
 
 ### 3. Can't access admin panel
 - Login with email: `admin@boat.com` or `admin@gmail.com`
@@ -1120,16 +1062,17 @@ All requirements from the master prompt are implemented:
 
 ### Environment Variables
 All secrets are in `.env`:
-- Appwrite endpoint
+- Firebase API key
 - Project ID
-- Database ID
-- Collection IDs
-- Storage bucket ID
+- Auth domain
+- Storage bucket
+- Messaging sender ID
+- App ID
 
 **Never commit `.env` to Git!**
 
 ### Mock Mode
-If Appwrite is not configured, app runs in "Mock Mode":
+If Firebase is not configured, app runs in "Mock Mode":
 - Data stored in localStorage
 - Pre-seeded products
 - Works offline
@@ -1139,7 +1082,7 @@ If Appwrite is not configured, app runs in "Mock Mode":
 - Admin check is email-based (NOT production-grade)
 - Use proper role-based auth in real app
 - Validate all inputs on backend
-- Add CSRF protection for production
+- Add Firestore security rules for production
 
 ---
 
@@ -1149,11 +1092,11 @@ This is a **fully functional, production-ready e-commerce platform** with:
 - Modern dark UI
 - Complete customer journey
 - Admin management panel
-- Real Appwrite backend integration
+- Real Firebase backend integration
 - Offline mock mode for development
 
 **Total Lines of Code:** ~2,500+
-**Dependencies:** 6 (React, Router, Appwrite, Lucide, Vite)
+**Dependencies:** 6 (React, Router, Firebase, Lucide, Vite)
 **Pages:** 5 main pages
 **Components:** 6 reusable components
 **Services:** 1 comprehensive service layer
