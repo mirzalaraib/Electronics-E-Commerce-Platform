@@ -10,8 +10,8 @@ Before starting, make sure you have:
 - [ ] Node.js installed (version 16 or higher)
 - [ ] VS Code or any code editor
 - [ ] Terminal/Command Prompt access
-- [ ] Appwrite database set up (using DATABASE_SETUP.md)
-- [ ] `.env` file configured with credentials
+- [ ] Firebase project set up (using FIREBASE_SETUP.md)
+- [ ] `.env` file configured with Firebase credentials
 
 ---
 
@@ -47,7 +47,7 @@ npm install
 ```
 
 **What this does:**
-- Downloads all required packages (React, Appwrite, etc.)
+- Downloads all required packages (React, Firebase, etc.)
 - Creates `node_modules` folder
 - May take 2-5 minutes depending on internet speed
 
@@ -126,7 +126,7 @@ Follow these tests in order. Check each one as you complete it.
 **❌ FAIL?** 
 - Open browser console (F12)
 - Check for error messages
-- Most likely: Appwrite not configured yet → App will show mock data
+- Most likely: Firebase not configured yet → App will show mock data
 
 ---
 
@@ -149,7 +149,7 @@ Follow these tests in order. Check each one as you complete it.
 
 **❌ FAIL?**
 - Check Home.jsx line 33: `const searchVal = searchFilter || searchParams.get('search') || '';`
-- Verify appwriteService.products.list() is called
+- Verify firebaseService.products.list() is called
 
 ---
 
@@ -293,7 +293,7 @@ Follow these tests in order. Check each one as you complete it.
 
 **❌ FAIL?**
 - Check AuthContext.jsx signup function
-- Check appwrite.js auth.signup implementation
+- Check firebase.js auth.signup implementation
 
 ---
 
@@ -434,7 +434,7 @@ Follow these tests in order. Check each one as you complete it.
 2. Click **User icon**
 3. Login with:
    - Email: `admin@boat.com`
-   - Password: (password you created in Appwrite)
+   - Password: (password you created in Firebase)
 4. After login, check navbar:
    - Should show: "Hi, Admin User"
    - Should show: **"Admin Panel"** link (only for admin emails)
@@ -444,7 +444,7 @@ Follow these tests in order. Check each one as you complete it.
 **✅ PASS CRITERIA:** Admin access works
 
 **❌ FAIL?**
-- Verify admin email in Appwrite is exactly: `admin@boat.com`
+- Verify admin email in Firebase is exactly: `admin@boat.com`
 - Check ProtectedRoute.jsx line 23: admin check logic
 
 ---
@@ -768,7 +768,7 @@ Mark each as completed:
 - [ ] Server starts without errors
 - [ ] App loads at localhost:5173
 - [ ] No console errors on load
-- [ ] Mock data appears (if Appwrite not configured)
+- [ ] Mock data appears (if Firebase not configured)
 
 ### Customer Features
 - [ ] Homepage displays correctly
@@ -840,20 +840,20 @@ npm run dev -- --port 3000
 ```
 
 ### Products not loading
-1. Check `.env` file has correct credentials
-2. Check Appwrite collections exist
+1. Check `.env` file has correct Firebase credentials
+2. Check Firestore collections exist
 3. Check browser console for errors
-4. Verify Appwrite project is not paused
+4. Verify Firebase project is active
 
 ### Images not showing
-1. Check storage bucket permissions
+1. Check Storage permissions in Firebase Console
 2. Verify imageID is correct
 3. For mock data, ensure image URLs are accessible
 
 ### Can't login as admin
 1. Verify email is exactly: `admin@boat.com`
 2. Check password is correct
-3. Verify authentication enabled in Appwrite
+3. Verify Email/Password auth is enabled in Firebase
 
 ### Cart clears on refresh
 1. Check localStorage is enabled in browser
@@ -915,7 +915,7 @@ npm run dev -- --port 3000
 
 If tests fail:
 1. **Check the console** (F12) for error messages
-2. **Verify DATABASE_SETUP.md** was followed correctly
+2. **Verify FIREBASE_SETUP.md** was followed correctly
 3. **Check .env file** has correct values
 4. **Review PROJECT_EXPLAINED.md** for code flow
 5. **Ask for help** with:
